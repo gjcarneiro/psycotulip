@@ -1,5 +1,5 @@
-psycopg2 integration with tulip.
-================================
+psycopg2 integration with asyncio (aka Tulip).
+==============================================
 
 ...
 
@@ -8,9 +8,9 @@ Requirements
 
 - Python 3.3
 
-- psycopg2
+- psycopg2 >= 2.5
 
-- tulip http://code.google.com/p/tulip/
+- asyncio: http://code.google.com/p/tulip/
 
 
 License

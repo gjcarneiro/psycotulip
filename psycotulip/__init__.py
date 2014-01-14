@@ -1,5 +1,5 @@
 __all__ = ['connect', 'PostgresConnectionPool']
-import tulip
+import asyncio
 import functools
 import psycopg2
 import psycopg2.extensions
@@ -7,9 +7,9 @@ import psycopg2.extensions
 from .pool import PostgresConnectionPool
 
 
-@tulip.coroutine
+@asyncio.coroutine
 def wait(conn, loop):
-    waiter = tulip.Future(loop=loop)
+    waiter = asyncio.Future(loop=loop)
 
     _wait(loop, waiter, False, conn)
     try:
@@ -36,10 +36,10 @@ def _wait(loop, fut, registered, conn):
         loop.add_writer(fd, _wait, loop, fut, True, conn)
 
 
-@tulip.coroutine
+@asyncio.coroutine
 def connect(dsn=None, *, loop=None):
     if loop is None:
-        loop = tulip.get_event_loop()
+        loop = asyncio.get_event_loop()
 
     conn = psycopg2.connect(
         dsn=dsn,
@@ -65,7 +65,7 @@ class Cursor(psycopg2.extensions.cursor):
         yield from self.execute('ROLLBACK')
 
     def wait(self):
-        yield from wait(self.connection, self._loop)        
+        yield from wait(self.connection, self._loop)
 
     def execute(self, *args, **kw):
         super().execute(*args, **kw)

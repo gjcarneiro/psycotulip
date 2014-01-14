@@ -1,6 +1,6 @@
 """Psycopg Connections Pool."""
-import tulip
-import tulip.queues
+import asyncio
+import asyncio.queues
 import psycotulip
 import psycopg2.extensions
 
@@ -11,10 +11,10 @@ class DatabaseConnectionPool(object):
         if not isinstance(maxsize, int):
             raise TypeError('Expected integer, got %r' % (maxsize,))
         self._maxsize = maxsize
-        self._pool = tulip.queues.Queue(loop=loop)
+        self._pool = asyncio.queues.Queue(loop=loop)
         self._size = 0
 
-    @tulip.coroutine
+    @asyncio.coroutine
     def get(self):
         pool = self._pool
         if self._size >= self._maxsize or pool.qsize():
@@ -33,7 +33,7 @@ class DatabaseConnectionPool(object):
             raise psycopg2.extensions.OperationalError(
                 "Connection is closed: %r" % (conn,))
 
-        self._pool.put_nowait(item)
+        self._pool.put_nowait(conn)
 
     def closeall(self):
         pool = self._pool
@@ -42,7 +42,7 @@ class DatabaseConnectionPool(object):
             try:
                 conn = pool.get_nowait()
                 conn.close()
-            except tulip.queues.Empty:
+            except asyncio.queues.Empty:
                 break
 
     def connect(self):
@@ -59,6 +59,6 @@ class PostgresConnectionPool(DatabaseConnectionPool):
         self._kwargs = kwargs
         super().__init__(maxsize, loop=loop)
 
-    @tulip.coroutine
+    @asyncio.coroutine
     def connect(self):
         return (yield from self._connect(*self._args, **self._kwargs))
